@@ -1,0 +1,2 @@
+when connect databace in your backend project then always remember databace connetction wrap on try catch block or asnyc or await 
+databace is alway in a another continent when you connect databace there was a time ; it always best approtch to when connect data bace alway asynce or await 
