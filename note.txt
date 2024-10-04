@@ -1,2 +1,17 @@
+npm i -D nodemon devdepandency commend  constants file are use mongodb name (export const DB_NAME = "Ztube" )
 when connect databace in your backend project then always remember databace connetction wrap on try catch block or asnyc or await 
 databace is alway in a another continent when you connect databace there was a time ; it always best approtch to when connect data bace alway asynce or await 
+db/index.js is use to databace connection only
+app js app.lisen when i use to asnycronus function in mongodb databace connection function then asnycronus function always return a promis, the promis is .then or .catch, .catch use only error hendel and .then use  app.lisen mathod pass  
+
+pakge install cookie-parser, cors
+
+firstly i create a app then use app.use mathod
+app.use mathod are use in middleware or configaration onley 
+
+app.use(express.urlencoded({extended})) all url a diffrent difarend endcoded ( there some example of endcore (space = "%20")) 
+extend is object in under object
+
+coockie-parser use for coockies exess or set in user browser  and porfom curd oparation  for some example of store secure coockes  user browser, this coocies server onley read or remove
+utails folder are use same code file are almost use only diffrent page some example apierro, apisucess ect 
+apierror file use error hendeling purpus this file are makin with difine a custome error class 

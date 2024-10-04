@@ -1,4 +1,5 @@
 // require("dotenv").config({path: './env'})
+import app from "./app.js";
 
 import dotenv from "dotenv";
 // import mongoose, { connect } from "mongoose";
@@ -9,7 +10,17 @@ dotenv.config({
     path: "./env"
 })
 
+const port = process.env.PORT;
+
 connectDb()
+.then(() => {
+    app.listen(port || 5000, () => {
+        console.log(`server is runing started at port : ${port}`)
+    })
+})
+.catch((err) => {
+    console.log('Mongodb connection faliled', err);
+})
 
 
 
