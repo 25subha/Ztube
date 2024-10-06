@@ -15,3 +15,6 @@ extend is object in under object
 coockie-parser use for coockies exess or set in user browser  and porfom curd oparation  for some example of store secure coockes  user browser, this coocies server onley read or remove
 utails folder are use same code file are almost use only diffrent page some example apierro, apisucess ect 
 apierror file use error hendeling purpus this file are makin with difine a custome error class 
+
+npm i mongoose-aggregate-paginate-v2 it is  bacicaly use plugin inject
+then install bycrept or jsonwebtoken bycrept is a library to help you hash paswords  or token 
