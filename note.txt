@@ -18,3 +18,8 @@ apierror file use error hendeling purpus this file are makin with difine a custo
 
 npm i mongoose-aggregate-paginate-v2 it is  bacicaly use plugin inject
 then install bycrept or jsonwebtoken bycrept is a library to help you hash paswords  or token 
+npm i cloudnary multer cloudnary use file uplode third party app multer use help uplode file,
+
+fs its mean file system it work to file read, write , remove , all of think to do (https://nodejs.org/api/fs.html);
+
+use multer documentation (https://github.com/expressjs/multer)
