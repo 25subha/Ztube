@@ -23,3 +23,7 @@ npm i cloudnary multer cloudnary use file uplode third party app multer use help
 fs its mean file system it work to file read, write , remove , all of think to do (https://nodejs.org/api/fs.html);
 
 use multer documentation (https://github.com/expressjs/multer)
+
+when you handel the file the you use middleware example of middleware uplode  here register first you just add upload.filds (filds use multiple file onley here you want to all file hendel this filds ) 
+
+here filds aspted a arry here you difene two object one avtar or background image

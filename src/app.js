@@ -15,11 +15,10 @@ app.use(coockieParser())
 
 // routes import
 import userRouter from "./routes/user.routes.js"
-
 // routes declaration
 
-app.use("/api/v1/user", userRouter) // if you use to stander practice you use this code eighter use "/user", userRouter
+app.use("/api/v1/users", userRouter) // if you use to stander practice you use this code eighter use "/user", userRouter
 
-// http://localhost:/api/v1/user/ragister
+// http://localhost:8000/api/v1/users/ragister
 
 export default app;
