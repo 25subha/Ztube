@@ -3,6 +3,25 @@ import {ApiError} from "../utils/ApiError.js"
 import { User } from "../models/user.model.js";
 import { uplonOnCloudinary } from "../utils/cloudinary.js";
 import { ApiRespose } from "../utils/ApiResponse.js";
+
+const genarateAccessTokenOrRefeshToken = async (userId) => {
+    try {
+        const user = await User.findById(userId) // finde user id by user data 
+        const accessToken = await user.generateAccessToken() //ganarae accesstoken calld a mathod(generateAccessToken())
+        const refreshToken = await user.generateRefreshToken()
+
+        user.refreshToken = refreshToken // refreshToken add in object(how to add value in object)
+        user.save({validateBeforeSave: false}) // and save the value in user  
+
+        return {accessToken, refreshToken} // return value as a objact
+
+    } catch (error) {
+        throw new ApiError(500, "something went wrong while generating accessToken or Refresh Token");
+        
+    }
+   
+}
+
 const ragisterUser = asyncHandler(async (req, res) => {
     // get user details from frontend
     // validation - not empty 
@@ -13,7 +32,7 @@ const ragisterUser = asyncHandler(async (req, res) => {
     // removed password or refresh token fild from response
     // check for user creation (if user null  response or user created sucessfull)
     // return response
-
+    // console.log(req.body)
     const { userName, email, fullName, password } = req.body
     // console.log(userName, email)
     const userArray = [userName, email, fullName, password]
@@ -23,22 +42,38 @@ const ragisterUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All filds are required");
     }
 
-    const existingUser =await User.findOne({ 
+    const existingUser = await User.findOne({ 
         $or: [{userName}, {email}]
-    })
+    });
+
     if (existingUser) {
-        throw new ApiError(408, "email or userName alrady exist")
+        if (existingUser.userName === userName) {
+            throw new ApiError(408, "this userName alrady exist")
+        } else if (existingUser.email === email) {
+            throw new ApiError(408, "this email alrady exist")
+        }
+       
     }
-
+   
+    //console.log(req.files);
+    
     const avatarLocalpath = req.files?.avatar[0]?.path
-    // console.log(req.files)
-    const coverImageLocalpath = req.files?.coverImage[0]?.path
 
-    if (!avatarLocalpath) {
-        throw new ApiError(400, "Avatar file is required ");
+    // console.log(req.files)
+    // const coverImageLocalpath = req.files?.coverImage[0]?.path
+    // console.log(coverImageLocalpath)
+
+    let coverImageLocalPath ;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path
     }
-    const avatar =await uplonOnCloudinary(avatarLocalpath)
-    const coverImage =await uplonOnCloudinary(coverImageLocalpath)
+    if (!avatarLocalpath) {
+        throw new ApiError(400, "avatar file is required ");
+    }
+
+    const avatar = await uplonOnCloudinary(avatarLocalpath)
+    const coverImage = await uplonOnCloudinary(coverImageLocalPath)
+
     if (!avatar) {
         throw new ApiError(400, "Avatar file is required ");  
     }
@@ -47,7 +82,7 @@ const ragisterUser = asyncHandler(async (req, res) => {
         fullName,
         userName: userName.toLowerCase(),
         email,
-        avater: avatar.url,
+        avatar: avatar.url,
         coverImage: coverImage?.url || "",
         password
     });
@@ -65,4 +100,91 @@ const ragisterUser = asyncHandler(async (req, res) => {
     )
 })
 
-export {ragisterUser}
+const loginUser = asyncHandler(async (req, res) => {
+    // get data from req.body  
+    // user name or email have or not
+    // user have or not find user
+    // cheack password is correct or not
+    // is password is wright then access token or refersh token genarate or pass the user 
+    // send  cookie  refresh or access token
+
+    const { userName, email, password } = req.body
+
+    if ( !userName || !email ) {
+        throw new ApiError(400, "userName or email is required")
+    } 
+
+    const user = await User.findOne(
+        {
+            $or: [ {userName}, {email} ]
+        }
+    )
+    
+    if (!user) {
+        throw new ApiError(404, "user does not exist")
+    }
+
+    const ispasswordValid = await user.isPasswordCorrect(password) // this way to check password is correct or not this function is define user model.js
+    if (!ispasswordValid) {
+        throw new ApiError(401, "user password invalid") // eighter you can pass invalid user credrntials this message
+    }
+
+    const { refreshToken, accessToken } = await genarateAccessTokenOrRefeshToken(user._id)
+
+    const loginUser = await User.findById(user._id).select(
+        "-password -refreshToken"
+    )
+
+    const options = {
+        httpOnley: true,
+        secure: true
+    }
+
+    return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+        new ApiRespose(
+            200,
+            {
+                user: loginUser, accessToken, refreshToken
+            },
+            "user loged in sucessfully"
+        )
+    )
+
+});
+
+const logOutUser = asyncHandler(async (req, res) => {
+
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                refreshToken: undefined
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    const options = {
+        httpOnley: true,
+        secure: true
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json( new ApiRespose(200, {}, "user Logged out "))
+
+})
+
+export {
+    ragisterUser,
+    loginUser,
+    logOutUser
+}

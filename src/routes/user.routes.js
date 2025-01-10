@@ -1,16 +1,24 @@
 import { Router } from "express";
-import { ragisterUser } from "../controllers/user.controller.js";
+import { ragisterUser, loginUser, logOutUser } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
+import { varifyJwt } from "../middlewares/auth.middlewares.js";
+
 
 const router = Router();
 
 router.route("/ragister").post( upload.fields([
-    {Name: "avatar",
-    maxCount:1
+    {
+        name: "avatar",
+        maxCount:1
     },
-    {Name: "coverImage",
+    {
+        name: "coverImage",
         maxCount:1
     }
 ]), ragisterUser)
+
+router.route("/login").post(loginUser)
+router.route("/logout").post(varifyJwt, logOutUser)
+
 
 export default router;
