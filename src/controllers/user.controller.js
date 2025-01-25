@@ -11,7 +11,7 @@ const genarateAccessTokenOrRefeshToken = async (userId) => {
         const refreshToken = await user.generateRefreshToken()
 
         user.refreshToken = refreshToken // refreshToken add in object(how to add value in object)
-        user.save({validateBeforeSave: false}) // and save the value in user  
+        await user.save({validateBeforeSave: false}) // and save the value in user  
 
         return {accessToken, refreshToken} // return value as a objact
 
@@ -46,14 +46,18 @@ const ragisterUser = asyncHandler(async (req, res) => {
         $or: [{userName}, {email}]
     });
 
-    if (existingUser) {
-        if (existingUser.userName === userName) {
-            throw new ApiError(408, "this userName alrady exist")
-        } else if (existingUser.email === email) {
-            throw new ApiError(408, "this email alrady exist")
-        }
+    // if (existingUser) {
+    //     if (existingUser.userName === userName) {
+    //         throw new ApiError(408, "this userName alrady exist")
+    //     } else if (existingUser.email === email) {
+    //         throw new ApiError(408, "this email alrady exist")
+    //     }
        
-    }
+    // }
+
+    if(existingUser) {
+        throw new ApiError(409, "User with email or username already exists")   
+     }
    
     //console.log(req.files);
     
@@ -109,8 +113,11 @@ const loginUser = asyncHandler(async (req, res) => {
     // send  cookie  refresh or access token
 
     const { userName, email, password } = req.body
-
-    if ( !userName || !email ) {
+    console.log("body", req.body)
+    console.log("userName", userName)
+    console.log("email", email)
+    console.log("password", password)
+    if ( !userName && !email ) {
         throw new ApiError(400, "userName or email is required")
     } 
 
@@ -124,19 +131,19 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(404, "user does not exist")
     }
 
-    const ispasswordValid = await user.isPasswordCorrect(password) // this way to check password is correct or not this function is define user model.js
-    if (!ispasswordValid) {
+    const isPasswordValid = await user.isPasswordCorrect(password) // this way to check password is correct or not this function is define user model.js
+    console.log('Is password valid?', isPasswordValid);  // Log the result
+
+    if (!isPasswordValid) {
         throw new ApiError(401, "user password invalid") // eighter you can pass invalid user credrntials this message
     }
 
-    const { refreshToken, accessToken } = await genarateAccessTokenOrRefeshToken(user._id)
+    const { accessToken, refreshToken } = await genarateAccessTokenOrRefeshToken(user._id)
 
-    const loginUser = await User.findById(user._id).select(
-        "-password -refreshToken"
-    )
+    const loggedInUser = await User.findById(user._id).select( "-password -refreshToken" )
 
     const options = {
-        httpOnley: true,
+        httpOnly: true,
         secure: true
     }
 
@@ -148,7 +155,7 @@ const loginUser = asyncHandler(async (req, res) => {
         new ApiRespose(
             200,
             {
-                user: loginUser, accessToken, refreshToken
+                user: loggedInUser, accessToken, refreshToken
             },
             "user loged in sucessfully"
         )
@@ -162,7 +169,7 @@ const logOutUser = asyncHandler(async (req, res) => {
         req.user._id,
         {
             $set: {
-                refreshToken: undefined
+                refreshToken: null
             }
         },
         {
@@ -171,7 +178,7 @@ const logOutUser = asyncHandler(async (req, res) => {
     )
 
     const options = {
-        httpOnley: true,
+        httpOnly: true,
         secure: true
     }
 

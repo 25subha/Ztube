@@ -1,6 +1,7 @@
 import mongoose, {Schema} from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { ApiError } from "../utils/ApiError.js";
 
  
 const userSchema = new Schema({
@@ -32,10 +33,10 @@ const userSchema = new Schema({
     coverImage: {
         type: String,//cloudnary url
     },
-    watchHistory: {
+    watchHistory: [{
         type: Schema.Types.ObjectId,
         ref: "video"
-    },
+    }],
     password: {
         type: String,
         required:[ true, "password is required"]
@@ -49,16 +50,23 @@ const userSchema = new Schema({
 
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
-    this.password = bcrypt.hash(this.password, 8)
+   // console.log("Hashing password..."); // Debug log
+    this.password = await  bcrypt.hash(this.password, 10)
     next()
 })
 
 userSchema.methods.isPasswordCorrect = async function(password) {
+    //console.log("Stored password: ", this.password);
+    // if (!password || !this.password) {
+    //     throw new ApiError(400,"Password or user password not found");
+        
+    // }
+
    return await bcrypt.compare(password, this.password)
 }
 
 userSchema.methods.generateAccessToken = function() {
-    jwt.sign(
+    return jwt.sign(
     {
         _id: this._id,
         email: this.email,
