@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ragisterUser, loginUser, logOutUser } from "../controllers/user.controller.js";
+import { ragisterUser, loginUser, logOutUser, refreshAccessToken } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { varifyJwt } from "../middlewares/auth.middlewares.js";
 
@@ -19,6 +19,7 @@ router.route("/ragister").post( upload.fields([
 
 router.route("/login").post(loginUser)
 router.route("/logout").post(varifyJwt, logOutUser)
+router.route("/refresh-token").post(refreshAccessToken)
 
 
 export default router;

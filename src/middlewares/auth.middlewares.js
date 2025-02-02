@@ -3,10 +3,10 @@ import asyncHandler from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js"
 import jwt from "jsonwebtoken"
 
-export const varifyJwt = asyncHandler(async( req, res, next ) => {
+export const varifyJwt = asyncHandler(async( req, _, next ) => {
 try {
-        const token = req.cookie?.accessToken || req.Headers("Authorization")?.replace("Bearer ", "") 
-        console.log(token)
+        const token = req.cookies?.accessToken || req.header ("Authorization")?.replace("Bearer ", "") 
+        //console.log(token)
     
         if (!token) {
             throw new ApiError(401, "Unauthorized request");
@@ -23,7 +23,7 @@ try {
         req.user = user
         next()
 } catch (error) {
-    throw new ApiError(401, "Invalid Access Token");
+    throw new ApiError(401, error?.message || "Invalid Access Tokens");
     
 }
     
