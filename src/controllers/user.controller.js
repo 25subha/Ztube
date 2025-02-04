@@ -264,7 +264,7 @@ const updatedUserDetails = asyncHandler(async(req, res) => {
         throw new ApiError(400, "all filds are required")
     }
 
-    const user = await User.findByIdAndUpdate(req.user?._id,
+    const user = await User.findByIdAndUpdate(req.user?._id,  // find user in the databace
         {
             $set: {
                 fullName, // if you want to do {fullName: fullName, email: email}
@@ -281,6 +281,60 @@ const updatedUserDetails = asyncHandler(async(req, res) => {
     .json(
         new ApiRespose(200, user, "User details updated sucessfully")
     )
+});
+
+const updatedUserAvatar = asyncHandler(async(req, res) => {
+    const avatarLocalPath = req.file?.avatar.path
+    if (!avatarLocalPath) {
+        throw new ApiError(400, "avtar file is messing")
+    }
+    const avatar = await uplonOnCloudinary(avatarLocalPath)
+    if (!avatar.url) {
+        throw new ApiError(400, "Error while uploding on avatar");
+        
+    }
+    const user = await User.findByIdAndUpdate(req.user?._id,
+        {
+            $set: {
+                avatar: avatar.url
+            }
+        },
+        {new: true}
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(
+        new ApiRespose(200, user, "avatar updated sucessfully")
+    )
+});
+
+const updatedUserCoverImage = asyncHandler(async(req, res) => {
+    const coverImageLocalPath = req.file?.path
+    if(!coverImageLocalPath) {
+        throw new ApiError(400, "cover image file is messing");
+        
+    }
+
+    const coverImage = await uplonOnCloudinary(coverImageLocalPath)
+
+    if (!coverImage.url) {
+        throw new ApiError(400, "Error while uploding on cover Image ");
+    }
+
+    const user = await User.findByIdAndUpdate(req.user?._id,
+        {$set: {
+            coverImage: coverImage.url
+        }},
+        {new: true}
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(
+        new ApiRespose(200, user, "cover image updated sucessfully")
+    )
+
 })
 
 export {
@@ -290,5 +344,7 @@ export {
     refreshAccessToken, 
     changeCurrentPassword,
     getCurrentUser,
-    updatedUserDetails
+    updatedUserDetails,
+    updatedUserAvatar,
+    updatedUserCoverImage
 }
