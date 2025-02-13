@@ -260,6 +260,7 @@ const getCurrentUser = asyncHandler(async(req, res) => {
 
 const updatedUserDetails = asyncHandler(async(req, res) => {
     const {fullName, email} = req.body
+    console.log(fullName, email)
 
     if (!fullName || !email) {
         throw new ApiError(400, "all filds are required")
